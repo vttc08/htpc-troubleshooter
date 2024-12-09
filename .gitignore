@@ -281,3 +281,5 @@ $RECYCLE.BIN/
 /venv/
 launch.json
 
+test.py
+
