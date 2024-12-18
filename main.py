@@ -5,7 +5,7 @@ from libs.affmpeg import AudioCodec, probe
 
 import logging
 import asyncio
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from fastapi import FastAPI, Request, Response
 from fastapi.templating import Jinja2Templates
@@ -175,6 +175,23 @@ async def test(request: Request, response: Response):
     async for result in sse_generator("The Matrix"):
         pass
     response.headers['HX-Redirect'] = "/mediachooser?errtype=bluescreen"
+
+@app.post('/jfwebhook')
+async def data(data: Dict[str, Any]):
+    ClientName = data.get("ClientName", None)
+    DeviceName = data.get("DeviceName", None)
+    item_id = data.get("ItemID", None)
+    item_data = await app.jfclient.get_item(item_id)
+    # ac, is_p7, is_atmos = await probe(item_data.get("Path"))
+    if data.get("NotificationType", None) == "PlaybackStart":
+        print("PlaybackStart")
+    elif data.get("NotificationType", None) == "PlaybackStop":
+        print("Stop PlaybackStart")
+    else:
+        print("Unknown")
+
+    return data
+
 
 if __name__ == "__main__":
     import uvicorn

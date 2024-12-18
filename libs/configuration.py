@@ -41,5 +41,7 @@ else:
     ha_domain="media_player"
     logger.debug("Loading Home Assistant entities.")
 
+ffm_debug=os.getenv("ffm_debug", "False")
+
 logger.debug("Configuration loaded.")
 

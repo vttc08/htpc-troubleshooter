@@ -2,8 +2,13 @@ import json
 from ffmpeg.asyncio import FFmpeg
 import re
 from dataclasses import dataclass, field
+from libs.configuration import ffm_debug
+from pathlib import Path
 # pip install python-ffmpeg
-
+"\\10.10.120.16\movies_share\21 Bridges (2019)"
+"/mnt/data/Movies/21 Bridges (2019)/"
+"\\10.10.120.16\movies_2_share\21 Bridges (2019)"
+"/mnt/data2/Movies/21 Bridges (2019)/"
 @dataclass(order=True)
 class AudioCodec:
     sort_index: int = field(init=False, repr=False)
@@ -30,7 +35,20 @@ class AudioCodec:
             self.score += 10
         self.sort_index = self.score
         
+def path_replacement(path: str) -> str:
+    """Replace server path with temp SMB path to debug on Windows"""
+    if ffm_debug == "1": # 1 or 0, dotenv do not support boolean
+        paths = path.split("/")
+        paths[0] = "/"
+        share_link = f"{paths[3].lower()}_{paths[2][-1] if paths[2][-1].isdigit() else ''}share"
+        paths[1:4] = ["10.10.120.16", share_link]
+        path = "/".join(paths)
+        return path
+    else:
+        return path
+    
 async def probe(path) -> tuple[AudioCodec, bool, bool]:
+    path = path_replacement(path)
     ffprobe = FFmpeg(executable="ffprobe").input(
         path,
         print_format="json", # ffprobe will output the results in JSON format
