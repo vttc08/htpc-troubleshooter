@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Media Chooser</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% include 'header.html' %}
+    </head>
+    <body>
+        <h2>Error Type: {{err_type}}</h2>
+        <hr>
+        <h3>{{ _('Which media are you having problem with?') }}</h3>
+        <h3 id="indicator" class="htmx-indicator">Loading...</h3>
+        <div id="spinner" class="htmx-indicator">
+            <img src="https://media.tenor.com/On7kvXhzml4AAAAj/loading-gif.gif" alt="Loading...">
+        </div>
+        <style>
+            #spinner {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 1000;
+            }
+        </style>
+        <div id="container">
+            {%for media in media_list%}
+            {%if media is not none %}
+            <a href="#">
+                <div class="button" style="background-image: url('{{jf_url}}/Items/{{media.Id}}/Images/Backdrop');">
+                    <div class="button-inner">{{media.Name}}</div>
+                    <button hx-get="/{{next_action}}?errtype={{err_type}}&item_id={{media.Id}}" hx-indicator="#spinner">Select</button>
+                </div>
+
+            </a>
+            {%endif%}
+            {%endfor%}
+        </div>
+    </body>
+</html>
+<style>
+    #container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .button {
+        width: 600px;
+        height:200px;
+        background-size: cover;
+        cursor: pointer;
+        margin: 10px;
+    }
+    .button-inner {
+        color: white;
+        font-size: 40px;
+        text-align: center;
+        margin: 0 auto;
+        background-color: rgba(0,0,0,0.7);
+        max-width: 70%;
+        height: auto;
+        position: relative;
+        transform: translate(0%, 50%);
+    }
+
+    </style>

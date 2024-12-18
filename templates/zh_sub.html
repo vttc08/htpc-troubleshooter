@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chinese Subtitle Help Page</title>
+        <meta charset="utf-8">
+        {% include 'header.html' %}
+    </head>
+    <body>
+        {% if has_zh_sub %}
+        <p>{{_("Chinese subtitle is present but likely not enabled. The instruction for enabling subtitle %s will be in documentation.") % display_title}}</p>
+        {% else %}
+        <p>{{_("Chinese subtitle not found, admin has been alerted. The system will attempt to automatically download Chinese subtitles.")}}</p>
+        {% endif %}
+    </body>
+</html>

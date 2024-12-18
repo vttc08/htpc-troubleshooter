@@ -12,6 +12,14 @@ def filter_activity(activity_list: list[dict], keys: list[str]) -> list:
     """Filter activity list by keys"""
     return [activity for activity in activity_list if activity.get("Type", None) in keys]
 
+def check_zh_sub(media_streams: list[dict]) -> bool:
+    """Check if media_streams has chinese subtitle"""
+    for stream in media_streams:
+        if stream.get("Codec",None).lower() == "subrip" and stream.get("Language", None) in ["zh", "chi"]:
+            display_title = stream.get("DisplayTitle", "Generic Chinese Subtitle")
+            return True, display_title
+    return False, "no_zh_sub"
+
 class JellyfinAsyncClient():
     def __init__(self, url, token):
         self.url = url
@@ -43,13 +51,15 @@ class JellyfinAsyncClient():
         item_id = uuid.UUID(item_id).__str__()
         response = await self.client.get(f'{self.url}/{endpoint}', headers=self.headers, params={"userId": user_id})
         response = response.json()
-        item_data = {
-            "Name": response.get("Name", None),
-            "Path": response.get("Path", None),
-            "OriginalTitle": response.get("OriginalTitle", None),
-            "MediaStreams": response.get("MediaStreams", None),
-        }
-        return item_data
+        if response.get("Type") == "Movie":
+            item_data = {
+                "Name": response.get("Name", None),
+                "Id": response.get("Id", None),
+                "Path": response.get("Path", None),
+                "OriginalTitle": response.get("OriginalTitle", None),
+                "MediaStreams": response.get("MediaStreams", None),
+            }
+            return item_data
     
     async def close(self):
         await self.client.aclose()

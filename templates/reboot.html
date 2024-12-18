@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Media Chooser</title>
+        <meta charset="utf-8">
+        {% include 'header.html' %}
+    </head>
+    <body>
+        <h2>Debug: you're having problem with playback of</h2>
+        <p>{{item_info.Name}}</p>
+        {% if times >= 2 %}
+        <h2>{{ _("You've been having problem with %s for more than once, would you like to set the playback time forward in Jellyfin while the box is rebooting. This could skip the corrupted parts which keeps crashing the box.") % item_info.Name }}</h2>
+        {% endif %}
+        <a href="/post-reboot?original_title={{item_info.OriginalTitle}}">Continue</a>
+        <a href="#" hx-get="/mediachecker?errtype=3&item_id=4443e54c42e246aaf16c93dcd7ca8271">Back</a>
+    </body>
+</html>
