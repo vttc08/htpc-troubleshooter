@@ -2,8 +2,10 @@ from libs.configuration import *
 from libs.homeassistant import HASync
 from libs.jellyfin import JellyfinAsyncClient, filter_activity, check_zh_sub
 from libs.affmpeg import AudioCodec, probe
+from libs.aonkyo import run_task, ReceiverController
 
 import logging
+import sys
 import asyncio
 from typing import Optional, Dict, Any
 
@@ -19,17 +21,20 @@ logger = logging.getLogger(__name__)
 
 error_codes = ["bluescreen", "volume_too_low", "just_player_error", "buffering","audio_desync","no_zh_sub","sub_desync"]
 
+if sys.platform.startswith('win'):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 def lifespan(app: FastAPI):
     app.haclient = HASync(hass_http_url, hass_token)
     app.jfclient = JellyfinAsyncClient(jf_url, jf_key)
     app.counter = 0
-    pass
+    app.onkyo_check = False
     yield
-    app.haclient.close()
+    # app.haclient.close()
 
 app = FastAPI(lifespan=lifespan)
 translator = FastAPIAndBabel(__file__, app, default_locale=language, translation_dir="lang")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals['_'] = _ # Important for Jinja2 to use _
 
@@ -138,11 +143,8 @@ async def show_sse(request: Request,item_id: Optional[str] = None, original_titl
 @app.get("/mediachecker")
 async def mediachecker(request: Request, response: Response, item_id: Optional[str], errtype: Optional[str]):
     item_info = await app.jfclient.get_item(item_id)
-    # src_codec, is_p7, is_atmos = await probe(item_info.get("Path"))
+    src_codec, is_p7, is_atmos = await probe(item_info.get("Path"))
     # Example data
-    src_codec = AudioCodec("truehd", False)
-    is_p7 = False
-    is_atmos = False
     if errtype == "no_zh_sub":
         response.headers['HX-Redirect'] = "/zh_sub?item_id=" + item_id
 
@@ -178,19 +180,24 @@ async def test(request: Request, response: Response):
 
 @app.post('/jfwebhook')
 async def data(data: Dict[str, Any]):
-    ClientName = data.get("ClientName", None)
     DeviceName = data.get("DeviceName", None)
-    item_id = data.get("ItemID", None)
-    item_data = await app.jfclient.get_item(item_id)
-    # ac, is_p7, is_atmos = await probe(item_data.get("Path"))
-    if data.get("NotificationType", None) == "PlaybackStart":
-        print("PlaybackStart")
-    elif data.get("NotificationType", None) == "PlaybackStop":
-        print("Stop PlaybackStart")
-    else:
-        print("Unknown")
-
-    return data
+    if DeviceName.lower().startswith("box r"):
+        item_id = data.get("ItemId", None)
+        item_data = await app.jfclient.get_item(item_id)
+        controller = ReceiverController("10.10.120.66")
+        if data.get("NotificationType", None) == "PlaybackStart":
+            app.onkyo_check = True
+            result = await run_task()
+            receiver_ac = AudioCodec(result.get("Input", "pcm"),False)
+            ac, _, _ = await probe(item_data.get("Path"))
+        elif data.get("NotificationType", None) == "PlaybackStop":
+            app.onkyo_check = False
+            ac, receiver_ac = 0, 0
+            print("Stop PlaybackStart")
+    if receiver_ac < ac and app.onkyo_check == True:
+        logger.error(f"Restart box intiated because the receive is playing {receiver_ac} but the media is {ac}.")
+        logger.debug(f"The problematic file is {item_data.get('Path')}")
+    return data.get("NotificationType", None)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
+eiscp_logger = logging.getLogger("eiscp")
+eiscp_logger.setLevel(logging.WARNING)
 
 class ReceiverController:
     def __init__(self, host, port=60128):
@@ -57,13 +59,14 @@ async def run_task():
     controller = ReceiverController("10.10.120.66")
     await controller.connect()
     try:
-        result = await asyncio.wait_for(controller.query(), timeout=3)
+        result = await asyncio.wait_for(controller.query(), timeout=8)
         logging.info(f"Receiver has switched to {result['Input']} audio input")
     except asyncio.TimeoutError:
-        logging.info("Receive input ")
+        logging.info("Receive input remains PCM after playback.")
         result = await controller.query_audio_information()
-        await controller.disconnect()
+    await controller.disconnect()
     return result
 
 if __name__ == "__main__":
     result = asyncio.run(run_task())
+    print(result)
