@@ -3,6 +3,7 @@ from libs.homeassistant import HASync
 from libs.jellyfin import JellyfinAsyncClient, filter_activity, check_zh_sub
 from libs.affmpeg import AudioCodec, probe
 from libs.aonkyo import run_task, ReceiverController
+from libs.helper import keyevent, send_keys, tap, package
 
 import logging
 import sys
@@ -15,7 +16,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, RedirectResponse
 from fastapi_and_babel.translator import FastAPIAndBabel
 from fastapi_and_babel import gettext as _
-from homeassistant_api import State
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 translator = FastAPIAndBabel(__file__, app, default_locale=language, translation_dir="lang")
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+app.mount("/docs", StaticFiles(directory="docs", html=True), name="docs")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals['_'] = _ # Important for Jinja2 to use _
 
@@ -102,6 +103,7 @@ async def mediachooser(request: Request, errtype: str):
 @app.get("/reboot_wait")
 async def reboot_wait(request: Request, item_id: str):
     logger.info("simulating Android box rebooting")
+    app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
     app.counter += 1
     if app.counter >= 2:
         pass # set playback progress 5s forward if playback repeatedly crashes
@@ -184,21 +186,20 @@ async def data(data: Dict[str, Any]):
     if DeviceName.lower().startswith("box r"):
         item_id = data.get("ItemId", None)
         item_data = await app.jfclient.get_item(item_id)
-        controller = ReceiverController("10.10.120.66")
+        controller = ReceiverController(avr_host)
         if data.get("NotificationType", None) == "PlaybackStart":
             app.onkyo_check = True
             result = await run_task()
-            receiver_ac = AudioCodec(result.get("Input", "pcm"),False)
+            receiver_ac = AudioCodec(result.get("Input", "dts"),False) # assign the highest AC score to prevent random reboots
             ac, _, _ = await probe(item_data.get("Path"))
         elif data.get("NotificationType", None) == "PlaybackStop":
             app.onkyo_check = False
             ac, receiver_ac = 0, 0
-            print("Stop PlaybackStart")
     if receiver_ac < ac and app.onkyo_check == True:
         logger.error(f"Restart box intiated because the receive is playing {receiver_ac} but the media is {ac}.")
         logger.debug(f"The problematic file is {item_data.get('Path')}")
+        app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
     return data.get("NotificationType", None)
-
 
 if __name__ == "__main__":
     import uvicorn
