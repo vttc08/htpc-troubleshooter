@@ -1,0 +1,3 @@
+[submodule "htpc-troubleshooter-support"]
+	path = htpc-troubleshooter-support
+	url = https://github.com/vttc08/htpc-troubleshooter-support

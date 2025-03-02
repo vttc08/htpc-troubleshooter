@@ -35,7 +35,7 @@ def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 translator = FastAPIAndBabel(__file__, app, default_locale=language, translation_dir="lang")
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
-app.mount("/docs", StaticFiles(directory="docs", html=True), name="docs")
+app.mount("/support", StaticFiles(directory="support", html=True), name="support")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals['_'] = _ # Important for Jinja2 to use _
 
