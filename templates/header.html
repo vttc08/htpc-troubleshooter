@@ -1,4 +1,4 @@
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
 <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!--HTMX-->
@@ -6,3 +6,7 @@
 <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
 <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/client-side-templates.js"></script>
 <script src="https://unpkg.com/mustache@latest"></script>
+<div class="bar">
+    <a href="/" class="baritem">{{_("Home")}}</a>
+    <a href="/support" class="baritem">{{_("Docs")}}</a>
+</div>

@@ -7,9 +7,14 @@
     </head>
     <body>
         {% if has_zh_sub %}
-        <p>{{_("Chinese subtitle is present but likely not enabled. The instruction for enabling subtitle %s will be in documentation.") % display_title}}</p>
+        <h3 class="generic">{{_("Chinese subtitle is present but likely not enabled. The instruction for enabling subtitle %s will be in documentation.") % display_title}}</h3>
         {% else %}
-        <p>{{_("Chinese subtitle not found, admin has been alerted. The system will attempt to automatically download Chinese subtitles.")}}</p>
+        <h3 class="generic">{{_("Chinese subtitle not found, admin has been alerted. The system will attempt to automatically download Chinese subtitles.")}}</h3>
         {% endif %}
+        <div class="btn">
+            <a href="support/zh/posts/av/nozhsub/#just-player" class="linkbutton">{{_("Chinese Subtitles Help")}}</a>
+            <a href="support/posts/av/nozhsub/#just-player" class="linkbutton">🇬🇧 (English)</a>
+            <a href="/" style="grid-area: 2 / 1 / span 1 / span 2;" class="linkbutton">{{_("Return Home")}}</a>
+        </div>
     </body>
 </html>

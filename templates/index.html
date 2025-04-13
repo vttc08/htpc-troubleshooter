@@ -3,5 +3,54 @@
     <head>
         <title>Home</title>
         {% include 'header.html' %}
+        <script src="{{ url_for('static', path='index.js') }}"></script>
     </head>
+    {% set errors = [
+        {"code": "bluescreen", "message": _("TV Blue Screen"), "errimage": url_for("static", path="images/bluescreen.png"),"custom": "bluescreen"},
+        {"code": "volume_too_low", "message": _("Volume Too Low"), "errimage": url_for("static", path="images/volume_too_low.png"), "custom": "volume_too_low"},
+        {"code": "just_player_error", "message": _("Just Player Error"), "errimage": url_for("static", path="images/just_player_error.png")},
+        {"code": "buffering", "message": _("Buffering"), "errimage": url_for("static", path="images/buffering.png")},
+        {"code": "audio_desync", "message": _("Audio Desync"), "errimage": url_for("static", path="images/audio_desync.png")},
+        {"code": "no_zh_sub", "message": _("No Chinese Subtitle"), "errimage": url_for("static", path="images/no_zh_sub.png")},
+        {"code": "sub_desync", "message": _("Subtitle Desync"), "errimage": url_for("static", path="images/sub_desync.png")},
+        {"code": "wrong_color", "message": _("Wrong Color"), "errimage": url_for("static", path="images/wrong_color.png")}
+    ] %}
+    <body>
+        <div class="button-container">
+            <h1 style="text-align: center; width: 80%;">{{ _("Welcome to HTPC Troubleshooter")}}</h1>
+            <p style="margin-top: 0px;">{{ _("What is the problem you're having?") }}</p>
+            {% for error in errors %}
+                <a href="{{ error.custom if error.custom is defined else 'mediachooser?errtype=' ~ error.code }}" 
+                   class="err" 
+                   style="background-image: url('{{ error.errimage }}'); background-size: cover; background-position: center;">
+                    <span style="background-color: rgba(0, 0, 0, 0.5); color: white; padding: 5px;">{{ error.message }}</span>
+                </a>
+            {% endfor %}
+            
+
+        </div>
+        <div class="spacer" style="height: 5vh;"></div>
+        <style>
+            .button-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .err {
+                width: 80vw;
+                max-width: 400px;
+                height: 10vh;
+                background: linear-gradient(to right, #4CAF50, #8BC34A);
+                padding: 25px 0;
+                text-align: center;
+                text-decoration: none;
+                color: white;
+                font-size: 1.5em;
+            }
+        </style>
+    </body>
 </html>

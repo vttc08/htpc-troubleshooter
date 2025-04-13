@@ -1,4 +1,13 @@
+{% include 'header.html' %}
 <script src="https://unpkg.com/htmx.org@1.4.0"></script>
 <body hx-get="/{{event}}" hx-trigger="load delay:3s">
-    <h2>{{ custom_msg }}</h2>
+    <h2 class="generic">{{ custom_msg }}</h2>
 </body>
+<div class="btn">
+    <a href="/support/zh/posts/av/onkyo/" class="linkbutton">{{_("Onkyo AV Problems")}}</a>
+    <a href="/support/posts/av/onkyo/" class="linkbutton">🇬🇧 (English)</a>
+    <a href="/" style="grid-area: 2 / 1 / span 1 / span 2;" class="linkbutton">{{_("Return Home")}}</a>
+</div>
+<style>
+
+</style>

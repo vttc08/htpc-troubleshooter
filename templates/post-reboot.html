@@ -6,11 +6,50 @@
         {% include 'header.html' %}
     </head>
     <body>
-        <h2>Server-Sent Events</h2>
-        <div hx-ext="sse" sse-connect="/automate_jf?original_title={{original_title}}" sse-swap="message" sse-close="stop">
-            Contents of this box will be updated in real time
-            with every SSE message received from the chatroom.
+        <div class="generic">
+            <h2>Server-Sent Events</h2>
+            <div id="history">
+                <h3>Actions:</h2>
+            </div>
+            <div style="grid-template-columns: repeat(2,1fr);" class="btn" id="hidden">
+                <a href="#" onclick="window.location.reload()" class="linkbutton">Reload 🔄</a>
+                <a href="/" class="linkbutton">Home</a>
+            </div>
+            <br>
+            <h3>Current Event:</h3>
+            <div id="sse" hx-ext="sse" sse-connect="/automate_jf?original_title={{original_title}}" sse-swap="message" sse-close="stop">
+                Contents of this box will be updated in real time
+                with every SSE message received from the chatroom.
+            </div>
         </div>
     </body>
 </html>
+<style>
+    #sse {
+        font-family: consolas, monospace;
+        border: 1px solid black;
+        border-radius: 5px;
+        padding: 5px;
+        margin: 5px;
+    }
+    #history {
+        line-height: 1.5em;
+    }
+    #hidden {
+        display: none;
+    }
+</style>
 <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+<script>
+    const sse = document.getElementById("sse");
+    let history = document.getElementById("history");
+    let hidden = document.getElementById("hidden");
+    document.addEventListener("htmx:sseClose", function (event) {
+        hidden.style.display = "grid";
+    });
+    document.addEventListener("htmx:sseMessage", function (event) {
+        let newdata = document.createElement("div");
+        newdata.innerHTML = event.detail.data;
+        history.appendChild(newdata);
+    });
+</script>
