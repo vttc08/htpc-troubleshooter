@@ -10,11 +10,17 @@
         <h3 class="generic">{{_("Chinese subtitle is present but likely not enabled. The instruction for enabling subtitle %s will be in documentation.") % display_title}}</h3>
         {% else %}
         <h3 class="generic">{{_("Chinese subtitle not found, admin has been alerted. The system will attempt to automatically download Chinese subtitles.")}}</h3>
+        <div id="sse" hx-ext="sse" sse-connect="/zhsubdl?item_id={{item_id}}" sse-swap="message" sse-close="stop">
+            Contents of this box will be updated in real time
+            with every SSE message received from the chatroom.
+        </div>
         {% endif %}
+
         <div class="btn">
             <a href="support/zh/posts/av/nozhsub/#just-player" class="linkbutton">{{_("Chinese Subtitles Help")}}</a>
             <a href="support/posts/av/nozhsub/#just-player" class="linkbutton">🇬🇧 (English)</a>
             <a href="/" style="grid-area: 2 / 1 / span 1 / span 2;" class="linkbutton">{{_("Return Home")}}</a>
         </div>
     </body>
+    <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
 </html>

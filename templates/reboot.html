@@ -13,11 +13,119 @@
             {% if times >= 2 %}
                 <h3>{{ _("You've been having problem with %s for more than once. By clicking 'Continue', the playback time will be set forward in Jellyfin while the box is rebooting.") % item_info.Name }}</h3>
             {% endif %}
+            <br>
+            <h3 id="continue-modal">
+                {{ _("Please only click continue once you have confirmed the box has finished rebooting. Click for more information.") }}
+            </h3>
             <div class="btn" style="grid-template-columns: repeat(2, 1fr);">
-                <a class="linkbutton" href="/post-reboot?original_title={{item_info.OriginalTitle}}">Continue</a>
-                <a  class="linkbutton" href="/">{{_("Home")}}</a>
+                <a class="linkbutton" id="continue" href="/post-reboot?original_title={{item_info.OriginalTitle}}">Continue</a>
+                <a class="linkbutton" href="/">{{_("Home")}}</a>
             </div>
         </div>
+        <div id="myModal" class="modal">
+
+            <!-- Modal content -->
+            <div class="modal-content">
+              <div class="modal-flex">
+                <div class="linkbutton" id="close" style="width:85%;">Got It</div>
+                <p>{{_("Wrong: CoreELEC screen")}}</p>
+                <img src="{{ url_for('static', path='images/reboot/reboot-wrong-ce.jpg') }}" alt="Reboot Wrong CoreELEC">
+                <p>{{_("Wrong: Splash screen, not booted yet")}}</p>
+                <img src="{{ url_for('static', path='images/reboot/reboot-wrong-splash.jpg') }}" alt="AndroidTV splash screen">
+                <p>{{_("Wrong: Loading screen, not initialized yet")}}</p>
+                <img src="{{ url_for('static', path='images/reboot/reboot-wrong-loading.jpg') }}" alt="ATV loading screen">
+                <p>{{_("Correct: Box is ready")}}</p>
+                <img src="{{ url_for('static', path='images/reboot/reboot-correct.jpg') }}" alt="Correct reboot screen">
+              </div>
+            </div>
+          
+          </div>
 
     </body>
+    <style>
+        .modal-flex {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            gap: 5px;
+        }
+        .modal-flex img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+        #continue-modal { /* the modal link*/
+            color: #2240ea;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+          }
+          
+          /* Modal Content/Box */
+          .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* 15% from the top and centered */
+            padding: 10px;
+            width: 90%; /* Could be more or less, depending on screen size */
+          }
+    </style>
+    <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("continue-modal");
+        var btn2 = document.getElementById("close");
+
+        // Get the <span> element that closes the modal
+        [btn, btn2].forEach(function(element) {
+            element.onclick = function() {
+                modal.style.display = "none";
+            }
+        });
+        // When the user clicks on the button, open the modal
+        
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        } 
+        let i = 3;
+        let continueButton = document.getElementById("continue");
+        continueButton.style.backgroundColor = "gray";
+        continueButton.style.pointerEvents = "none";
+        let timeoutInterval = setInterval(function(){
+            continueButton.innerHTML = i--;
+        }, 1000);
+        window.addEventListener("load", function() {
+            setTimeout(function() {
+                continueButton.innerHTML = "Continue";
+                clearInterval(timeoutInterval);
+                continueButton.style.backgroundColor = "#2240ea";
+                continueButton.style.pointerEvents = "auto";
+            }, 3000); 
+        });
+    </script>
 </html>
