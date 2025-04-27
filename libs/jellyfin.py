@@ -5,6 +5,7 @@ import asyncio
 import datetime
 from pathlib import Path
 import uuid
+import base64
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +59,28 @@ class JellyfinAsyncClient():
                 "Path": response.get("Path", None),
                 "OriginalTitle": response.get("OriginalTitle", None),
                 "MediaStreams": response.get("MediaStreams", None),
+                "ServerURL": f"{self.url}/web/#/details?id={item_id}",
+                "ProviderIds": response.get("ProviderIds", []),
             }
             return item_data
-    
+        
+    async def upload_subtitle(self, item_id: str, subtitle_path: str):
+        with open(subtitle_path, "rb") as f:
+            subtitle_data = f.read()
+        encoded_subtitle = base64.b64encode(subtitle_data).decode('utf-8')
+        payload = {
+            "Data": encoded_subtitle,
+                "Language": "chi",
+                "IsForced": False,
+                "Format": "srt",
+                "IsHearingImpaired": False,
+        }
+        endpoint = f"Videos/{item_id}/Subtitles"
+        response = await self.client.post(f"{self.url}/{endpoint}", headers=self.headers, json=payload)
+        if response.status_code in [200,204]:
+            logger.info(f"Subtitle uploaded successfully for item {item_id}.")
+        else:
+            logger.error(f"Failed to upload subtitle for item {item_id}. Status code: {response.status_code}")
     async def close(self):
         await self.client.aclose()
         

@@ -4,6 +4,8 @@ from libs.jellyfin import JellyfinAsyncClient, filter_activity, check_zh_sub
 from libs.affmpeg import AudioCodec, probe
 from libs.aonkyo import run_task, ReceiverController
 from libs.helper import keyevent, send_keys, tap, package
+from libs.pyapprise import apprise_obj
+from libs.subtitles import subtitle_providers
 
 import logging
 import sys
@@ -21,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 error_codes = ["bluescreen", "volume_too_low", "just_player_error", "buffering","audio_desync","no_zh_sub","sub_desync"]
 
+docs_lang = '/' if language == 'en' else '/zh/'
+
 if sys.platform.startswith('win'):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -28,6 +32,7 @@ def lifespan(app: FastAPI):
     app.haclient = HASync(hass_http_url, hass_token)
     app.jfclient = JellyfinAsyncClient(jf_url, jf_key)
     app.counter = 0
+    app.jf_automation_counter = 0
     app.onkyo_check = False
     yield
     # app.haclient.close()
@@ -103,7 +108,7 @@ async def mediachooser(request: Request, errtype: str):
 @app.get("/reboot_wait")
 async def reboot_wait(request: Request, item_id: str):
     logger.info("simulating Android box rebooting")
-    app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
+    await app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
     app.counter += 1
     if app.counter >= 2:
         pass # set playback progress 5s forward if playback repeatedly crashes
@@ -115,15 +120,28 @@ async def reboot_wait(request: Request, item_id: str):
     })
 
 async def sse_generator(original_title):
+    sleep_time = 1 if app.jf_automation_counter > 0 else 1 
     logger.info("Simulating opening Jellyfin")
+    # await app.haclient.adb(entity_id=ha_mp_adb, command=package(True, "org.jellyfin.androidtv"))
     yield "data: Opening Jellyfin\n\n"
-    await asyncio.sleep(1)
+    await asyncio.sleep(sleep_time)
     logger.info("Simulating clicking the search box")
     yield "data: Clicking the search box\n\n"
-    await asyncio.sleep(1)
+    await asyncio.sleep(sleep_time)
     logger.info(f"Simulating typing the title {original_title}")
-    yield f"data: Typing the title {original_title}\n\n"
+    msg = _("Typing the title")
+    yield f"data: {msg}: {original_title}\n\n"
+    # yield f"data: Typing the title {original_title}\n\n"
+    await asyncio.sleep(sleep_time)
+    yield f"data: ==========================\n\n"
+    msg = _("The troubleshooter has opened the media on Jellyfin for you.")
+    yield f"data: {msg}\n\n"
+    msg = _("If the media does not appear on the TV, you can refresh the page for the troubleshooter to try again.")
+    yield f"data: {msg}\n\n"
+    msg = _("Please proceed to play the media on your TV or return to the main page.")
+    yield f"data: {msg}\n\n"
     yield "event: stop\ndata: done\n\n"
+    app.jf_automation_counter += 1
 
 @app.get("/automate_jf")
 async def automate_jf(request: Request, original_title: Optional[str] = None):
@@ -152,10 +170,10 @@ async def mediachecker(request: Request, response: Response, item_id: Optional[s
 
     elif errtype == "buffering":
         pass # Will implement later, show networking info
-        response.headers['HX-Redirect'] = "https://www.facebook.com"
+        response.headers['HX-Redirect'] = f"/support{docs_lang}posts/av/networking/buffering"
     elif errtype == "just_player_error" and is_p7 == True:
         pass # Will implement later, show CoreELEC not implemented help
-        response.headers['HX-Redirect'] = "https://www.youtube.com"
+        response.headers['HX-Redirect'] = f"/support{docs_lang}posts/tvbox/coreelec"
     else:
         response.headers['HX-Redirect'] = "/reboot_wait?item_id=" + item_id
 
@@ -164,13 +182,61 @@ async def zh_sub(request: Request, item_id: Optional[str]):
     item_info = await app.jfclient.get_item(item_id)
     has_zh_sub, display_title = check_zh_sub(item_info.get("MediaStreams"))
     if not has_zh_sub:
-        await asyncio.sleep(5)
+        apprise_obj.notify(
+            body=f"Jellyfin item does not have Chinese subtitles. URL: {item_info.get('ServerURL')}",
+            title="Jellyfin item without Chinese subtitles",
+        )
+        # await asyncio.sleep(5)
         pass # implement downloading later
     return templates.TemplateResponse("zh_sub.html", {
         "request": request,
         "has_zh_sub": has_zh_sub,
         "display_title": display_title,
+        "item_id": item_id,
     })
+
+async def zhsubdl_sse(item_id: Optional[str]):
+    item_info = await app.jfclient.get_item(item_id)
+    provider_ids = item_info.get("ProviderIds", None)
+    tmdb_id = provider_ids.get("Tmdb", None)
+    if not tmdb_id:
+        msg = _("The media does not have a TMDB ID. Please check the media on Jellyfin.")
+        yield f"data: {msg}\n\n"
+        yield "event: stop\ndata: done\n\n"
+        return
+    msg = _("Attempting to download subtitles")
+    yield f"data: {msg}\n\n"
+    for provider in subtitle_providers:
+        logger.info(f"Attempting to download subtitles from {provider.__class__.__name__}")
+        try:
+            srtfile = provider.subtitle(tmdb_id=tmdb_id)
+            if srtfile:
+                break
+        except Exception as e:
+            apprise_obj.notify(body=f"Error downloading subtitles: {e}", title="Subtitle download error")
+            if type(e).__name__ == "NoSubtitleFound":
+                msg = _("No subtitles found for the media")
+                yield f"data: <h3 style='color:red;'>{msg}</h3>\n\n"
+                yield "event: stop\ndata: done\n\n"
+                return
+            else:
+                msg = _("An error occurred while downloading subtitles")
+                yield f"data: <h3 style='color:red;'>{msg}</h3>\n\n"
+                yield "event: stop\ndata: done\n\n"
+                return
+
+    await asyncio.sleep(1)
+    msg = _("Subtitles downloaded successfully")
+    yield f"data: <h3 style='color:green;'>{msg}</h3>\n\n"
+    await app.jfclient.upload_subtitle(item_info.get("Id"), srtfile)
+    yield f"data: 12312312\n\n"
+    yield "event: stop\ndata: done\n\n"
+
+@app.get("/zhsubdl")
+async def zhsubdl(request: Request, item_id: Optional[str] = None):
+    return StreamingResponse(zhsubdl_sse(item_id), media_type="text/event-stream")
+
+
 
 @app.get("/test") # test fastAPI endpoint as standalone functions
 async def test(request: Request, response: Response):
@@ -179,6 +245,18 @@ async def test(request: Request, response: Response):
     async for result in sse_generator("The Matrix"):
         pass
     response.headers['HX-Redirect'] = "/mediachooser?errtype=bluescreen"
+
+@app.get("/reboot2ce")
+async def reboot2ce(request: Request):
+    """Reboot to CoreELEC, need to check if USB is inserted before rebooting"""
+    logger.info("Simulating rebooting to CoreELEC")
+    await app.haclient.adb(entity_id=ha_mp_adb, command="reboot update")
+    custom_msg = _("The system has attempted to reboot to CoreELEC. If the system does not reboot, please check if the USB is inserted and try again. Otherwise, you can close this page.")
+    return templates.TemplateResponse("partial/custom_help.html", {
+        "request": request,
+        "custom_msg": custom_msg,
+        "event": "reboot2ce"
+    })
 
 @app.post('/jfwebhook')
 async def data(data: Dict[str, Any]):
