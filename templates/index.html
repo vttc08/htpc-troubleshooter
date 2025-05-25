@@ -7,6 +7,7 @@
     </head>
     {% set errors = [
         {"code": "bluescreen", "message": _("TV Blue Screen"), "errimage": url_for("static", path="images/bluescreen.png"),"custom": "bluescreen"},
+        {"code": "cannot_turn_on", "message": _("Can' open TV Box"), "errimage": url_for("static", path="images/cantopen.png")},
         {"code": "volume_too_low", "message": _("Volume Too Low"), "errimage": url_for("static", path="images/volume_too_low.png"), "custom": "volume_too_low"},
         {"code": "just_player_error", "message": _("Just Player Error"), "errimage": url_for("static", path="images/just_player_error.png")},
         {"code": "buffering", "message": _("Buffering"), "errimage": url_for("static", path="images/buffering.png")},

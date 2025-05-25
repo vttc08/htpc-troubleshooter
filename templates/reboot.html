@@ -20,8 +20,9 @@
             <div class="btn" style="grid-template-columns: repeat(2, 1fr);">
                 <a class="linkbutton" id="continue" href="/post-reboot?original_title={{item_info.OriginalTitle}}">Continue</a>
                 <a class="linkbutton" href="/">{{_("Home")}}</a>
+                <a hx-get="/stuckince" style="grid-area: 2 / 1 / span 1 / span 2;" class="linkbutton">{{_("Stuck in CoreELEC")}}</a>        
             </div>
-        </div>
+            </div>
         <div id="myModal" class="modal">
 
             <!-- Modal content -->
