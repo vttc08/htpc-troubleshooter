@@ -43,5 +43,13 @@ else:
 
 ffm_debug=os.getenv("ffm_debug", "False")
 
+apprise_url = os.getenv("apprise_url")
+
+subdl_api_key = os.getenv("subdl_api_key")
+
+coreelec_host = os.getenv("coreelec_host", "localhost")
+coreelec_user = os.getenv("coreelec_user", "root")
+coreelec_password = os.getenv("coreelec_password", "coreelec")
+
 logger.debug("Configuration loaded.")
 
