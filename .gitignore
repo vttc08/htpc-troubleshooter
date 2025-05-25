@@ -286,3 +286,5 @@ test.py
 
 /docs
 /support/
+lang/*/LC_MESSAGES/*.mo
+tmp/
