@@ -6,6 +6,8 @@ from libs.aonkyo import run_task, ReceiverController
 from libs.helper import keyevent, send_keys, tap, package
 from libs.pyapprise import apprise_obj
 from libs.subtitles import subtitle_providers
+from libs.coreelec import ssh_execute_command
+
 
 import logging
 import sys
@@ -67,6 +69,21 @@ async def volume_too_low(request: Request):
         "event": "volume_too_low"
     })
 
+@app.get("/cant_turn_on")
+async def cant_turn_on(request: Request, response: Response):
+    samsungtv = await app.haclient.async_get_state_check(domain=ha_domain, entity_id=ha_mp_tv)
+    if samsungtv.attributes.get("state", None) == "off":
+        custom_msg = _("The TV is off. The system will attempt to turn on the TV.")
+        await app.haclient.async_trigger_service(ha_domain, "turn_on", entity_id=ha_mp_tv)
+        return templates.TemplateResponse("partial/custom_help.html", {
+            "request": request,
+            "custom_msg": custom_msg,
+            "event": "cant_turn_on"
+        })
+    else:
+        return RedirectResponse(url=f"/support{docs_lang}posts/av/onkyo")
+
+
 @app.get("/bluescreen")
 async def bluescreen(request: Request):
     onkyo = await app.haclient.async_get_state_check(domain=ha_domain, entity_id=ha_mp_avr)
@@ -107,8 +124,11 @@ async def mediachooser(request: Request, errtype: str):
 
 @app.get("/reboot_wait")
 async def reboot_wait(request: Request, item_id: str):
-    logger.info("simulating Android box rebooting")
-    await app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
+    logger.info("Android box is rebooting")
+    try:
+        await app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
+    except Exception as e:
+        logger.error(f"Error rebooting Android box: {e}")
     app.counter += 1
     if app.counter >= 2:
         pass # set playback progress 5s forward if playback repeatedly crashes
@@ -122,17 +142,23 @@ async def reboot_wait(request: Request, item_id: str):
 async def sse_generator(original_title):
     sleep_time = 1 if app.jf_automation_counter > 0 else 1 
     logger.info("Simulating opening Jellyfin")
-    # await app.haclient.adb(entity_id=ha_mp_adb, command=package(True, "org.jellyfin.androidtv"))
     yield "data: Opening Jellyfin\n\n"
+    await app.haclient.adb(entity_id=ha_mp_adb, command=package(True, "org.jellyfin.androidtv"))
     await asyncio.sleep(sleep_time)
     logger.info("Simulating clicking the search box")
     yield "data: Clicking the search box\n\n"
+    # searchbox xy = 1425, 115
+    await app.haclient.adb(entity_id=ha_mp_adb, command=tap((1425, 115)))
+    # down and enter
     await asyncio.sleep(sleep_time)
     logger.info(f"Simulating typing the title {original_title}")
+    # adb cannot type Chinese characters, so we use original_title
     msg = _("Typing the title")
     yield f"data: {msg}: {original_title}\n\n"
-    # yield f"data: Typing the title {original_title}\n\n"
+    await app.haclient.adb(entity_id=ha_mp_adb, command=send_keys(f'"{original_title}"'))
     await asyncio.sleep(sleep_time)
+    # hide keyboard, then down and enter
+    await app.haclient.adb(entity_id=ha_mp_adb, command=keyevent(111,20,66))
     yield f"data: ==========================\n\n"
     msg = _("The troubleshooter has opened the media on Jellyfin for you.")
     yield f"data: {msg}\n\n"
@@ -250,13 +276,22 @@ async def test(request: Request, response: Response):
 async def reboot2ce(request: Request):
     """Reboot to CoreELEC, need to check if USB is inserted before rebooting"""
     logger.info("Simulating rebooting to CoreELEC")
-    await app.haclient.adb(entity_id=ha_mp_adb, command="reboot update")
+    try:
+        await app.haclient.adb(entity_id=ha_mp_adb, command="reboot update")
+    except Exception as e:
+        logger.error(f"Error rebooting to CoreELEC: {e}")
     custom_msg = _("The system has attempted to reboot to CoreELEC. If the system does not reboot, please check if the USB is inserted and try again. Otherwise, you can close this page.")
     return templates.TemplateResponse("partial/custom_help.html", {
         "request": request,
         "custom_msg": custom_msg,
         "event": "reboot2ce"
     })
+
+@app.get("/stuckince")
+async def stuckince(request: Request):
+    ssh_execute_command()
+    custom_msg = _("System will try to reboot out of CoreELEC. You can close this page.")
+    return "HTMX Okay"
 
 @app.post('/jfwebhook')
 async def data(data: Dict[str, Any]):
@@ -276,7 +311,13 @@ async def data(data: Dict[str, Any]):
     if receiver_ac < ac and app.onkyo_check == True:
         logger.error(f"Restart box intiated because the receive is playing {receiver_ac} but the media is {ac}.")
         logger.debug(f"The problematic file is {item_data.get('Path')}")
-        app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
+        try:
+            adb_command = "am start -a android.intent.action.VIEW -d file:///sdcard/Pictures/icon.png -timage/* com.mixplorer.silver/com.mixplorer.activities.ImageViewerActivity"
+            await app.haclient.adb(entity_id=ha_mp_adb, command=adb_command)
+            await asyncio.sleep(1)
+            await app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
+        except Exception as e:
+            logger.error(f"Error rebooting Android box: {e}")
     return data.get("NotificationType", None)
 
 if __name__ == "__main__":
