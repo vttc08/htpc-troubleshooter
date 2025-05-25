@@ -1,17 +1,14 @@
 # dannytriago/onkyo-eiscp
 import asyncio
-# from eiscp import eISCP
-# from eiscp.core import Receiver
+from eiscp import eISCP
+from eiscp.core import Receiver
 from fastapi import FastAPI
-
-avr_host = "10.10.120.66"
-avr_port = 60128
 
 
 async def lifespan(app: FastAPI):
     
-    # app.eiscp_instance = eISCP(avr_host, avr_port)
-    # app.receiver = Receiver(avr_host, avr_port)
+    app.eiscp_instance = eISCP(avr_host, avr_port)
+    app.receiver = Receiver(avr_host, avr_port)
     yield
     if app.receiver != None:
         await app.receiver.disconnect()

@@ -1,6 +1,7 @@
 import asyncio
-# from eiscp import eISCP
-# from eiscp.core import Receiver
+from eiscp import eISCP
+from eiscp.core import Receiver
+from libs.configuration import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,18 +50,18 @@ class ReceiverController:
         done = False
         while not done:
             result = await self.query_audio_information()
-            if result.get("Input", "").lower() != "pcm":
+            if result.get("Input", "").lower() != "pcm" and result.get("Input", "").lower() != "":
                 await self.disconnect()
                 done = True
             await asyncio.sleep(1)
         return result
 
 async def run_task():
-    controller = ReceiverController("10.10.120.66")
+    controller = ReceiverController(avr_host)
     await controller.connect()
     try:
         result = await asyncio.wait_for(controller.query(), timeout=8)
-        logging.info(f"Receiver has switched to {result['Input']} audio input")
+        logging.info(f"{result}")
     except asyncio.TimeoutError:
         logging.info("Receive input remains PCM after playback.")
         result = await controller.query_audio_information()
