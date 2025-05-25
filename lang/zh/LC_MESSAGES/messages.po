@@ -1,14 +1,14 @@
 # Chinese translations for PROJECT.
-# Copyright (C) 2024 ORGANIZATION
+# Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-12-05 23:04-0800\n"
-"PO-Revision-Date: 2024-12-05 22:47-0800\n"
+"POT-Creation-Date: 2025-05-24 19:17-0700\n"
+"PO-Revision-Date: 2025-05-24 19:15-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
 "Language-Team: zh <LL@li.org>\n"
@@ -18,11 +18,209 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.13.1\n"
 
-#: main.py:44
-msgid "The receiver volume is too low. Please increase the volume."
-msgstr ""
+#: main.py:62
+msgid ""
+"The receiver volume is too low or is not turned on. The system will "
+"attempt to raise the volume."
+msgstr "接收器音量过低或未打开。系统将尝试提高音量。"
 
-#: templates/partial/volume_too_low.html:2
-msgid "The volume is too low!"
-msgstr ""
+#: main.py:65
+msgid ""
+"The receiver volume is at good level. If the sound is still low or there "
+"is no sound, there may be another issue. Click the link below for more "
+"information."
+msgstr "接收器音量处于良好水平。如果声音仍然很低或没有声音，可能还有其他问题。单击下面的链接以获取更多信息。"
+
+#: main.py:76
+msgid "The TV is off. The system will attempt to turn on the TV."
+msgstr "电视关闭。系统将尝试打开电视。"
+
+#: main.py:95
+msgid ""
+"The receiver input is not set to the correct input. The system will "
+"attempt to switch to the correct input."
+msgstr "接收器输入未设置为正确的输入。系统将尝试切换到正确的输入。"
+
+#: main.py:98
+msgid ""
+"The receiver input is set to the correct input. If the screen is still "
+"blue, there may be another issue. Click the link below for more "
+"information."
+msgstr "接收器输入已设置为正确的输入。如果屏幕仍然是蓝色，可能还有其他问题。单击下面的链接以获取更多信息。"
+
+#: main.py:156
+msgid "Typing the title"
+msgstr "输入标题"
+
+#: main.py:163
+msgid "The troubleshooter has opened the media on Jellyfin for you."
+msgstr "故障排除工具已为您在 Jellyfin 上打开媒体。"
+
+#: main.py:165
+msgid ""
+"If the media does not appear on the TV, you can refresh the page for the "
+"troubleshooter to try again."
+msgstr ""如果媒体未出现在电视上，您可以刷新页面以让故障排除工具重试。"
+
+#: main.py:167
+msgid "Please proceed to play the media on your TV or return to the main page."
+msgstr "请继续在电视上播放媒体或返回主页。"
+
+#: main.py:229
+msgid "The media does not have a TMDB ID. Please check the media on Jellyfin."
+msgstr "媒体没有 TMDB ID。请检查 Jellyfin 上的媒体。"
+
+#: main.py:233
+msgid "Attempting to download subtitles"
+msgstr "尝试下载字幕"
+
+#: main.py:244
+msgid "No subtitles found for the media"
+msgstr "没有找到媒体的字幕"
+
+#: main.py:249
+msgid "An error occurred while downloading subtitles"
+msgstr "下载字幕时发生错误"
+
+#: main.py:255
+msgid "Subtitles downloaded successfully"
+msgstr "字幕下载成功"
+
+#: main.py:283
+msgid ""
+"The system has attempted to reboot to CoreELEC. If the system does not "
+"reboot, please check if the USB is inserted and try again. Otherwise, you"
+" can close this page."
+msgstr "系统已尝试重启到 CoreELEC。如果系统没有重启，请检查 USB 是否插入并重试。否则，您可以关闭此页面。"
+
+#: main.py:293
+msgid "System will try to reboot out of CoreELEC. You can close this page."
+msgstr "系统将尝试从 CoreELEC 重启。您可以关闭此页面。"
+
+#: templates/header.html:10 templates/reboot.html:22
+msgid "Home"
+msgstr "首页"
+
+#: templates/header.html:11
+msgid "Docs"
+msgstr "教程"
+
+#: templates/index.html:9
+msgid "TV Blue Screen"
+msgstr "电视蓝屏"
+
+#: templates/index.html:10
+msgid "Can' open TV Box"
+msgstr "电视遥控器无反应"
+
+#: templates/index.html:11
+msgid "Volume Too Low"
+msgstr "音量太低"
+
+#: templates/index.html:12
+msgid "Just Player Error"
+msgstr "播放器错误代码"
+
+#: templates/index.html:13
+msgid "Buffering"
+msgstr "网络缓冲"
+
+#: templates/index.html:14
+msgid "Audio Desync"
+msgstr "音频不同步"
+
+#: templates/index.html:15
+msgid "No Chinese Subtitle"
+msgstr "没有中文字幕"
+
+#: templates/index.html:16
+msgid "Subtitle Desync"
+msgstr "字幕不同步"
+
+#: templates/index.html:17
+msgid "Wrong Color"
+msgstr "颜色错误"
+
+#: templates/index.html:21
+msgid "Welcome to HTPC Troubleshooter"
+msgstr "欢迎使用 HTPC 故障排除工具"
+
+#: templates/index.html:22
+msgid "What is the problem you're having?"
+msgstr "你遇到什么问题？"
+
+#: templates/media_chooser.html:24
+msgid "Which of the following media are you having problem with?"
+msgstr "你遇到以下哪个媒体问题？"
+
+#: templates/mediachecker.html:12
+msgid "Which media are you having problem with?"
+msgstr "你遇到哪个媒体问题？"
+
+#: templates/post-reboot.html:12
+msgid "Actions"
+msgstr "操作"
+
+#: templates/post-reboot.html:19
+msgid "Current Event"
+msgstr "当前事件"
+
+#: templates/reboot.html:14
+#, python-format
+msgid ""
+"You've been having problem with %s for more than once. By clicking "
+"'Continue', the playback time will be set forward in Jellyfin while the "
+"box is rebooting."
+msgstr "您遇到 %s 的问题不止一次。单击“继续”，在盒子重启时，播放时间将在 Jellyfin 中提前设置。"
+
+#: templates/reboot.html:18
+msgid ""
+"Please only click continue once you have confirmed the box has finished "
+"rebooting. Click for more information."
+msgstr "请仅在确认盒子已完成重启后单击继续。单击以获取更多信息。"
+
+#: templates/reboot.html:23
+msgid "Stuck in CoreELEC"
+msgstr "重启错误的系统 CoreELEC"
+
+#: templates/reboot.html:32
+msgid "Wrong: CoreELEC screen"
+msgstr "错误：CoreELEC 屏幕"
+
+#: templates/reboot.html:34
+msgid "Wrong: Splash screen, not booted yet"
+msgstr "错误：开机画面，尚未启动"
+
+#: templates/reboot.html:36
+msgid "Wrong: Loading screen, not initialized yet"
+msgstr "错误：加载屏幕，尚未初始化"
+
+#: templates/reboot.html:38
+msgid "Correct: Box is ready"
+msgstr "正确：盒子已准备好"
+
+#: templates/zh_sub.html:10
+#, python-format
+msgid ""
+"Chinese subtitle is present but likely not enabled. The instruction for "
+"enabling subtitle %s will be in documentation."
+msgstr ""中文字幕存在但可能未启用。启用字幕 %s 的说明将在文档中。"
+
+#: templates/zh_sub.html:12
+msgid ""
+"Chinese subtitle not found, admin has been alerted. The system will "
+"attempt to automatically download Chinese subtitles."
+msgstr ""未找到中文字幕，管理员已被提醒。系统将尝试自动下载中文字幕。"
+
+#: templates/zh_sub.html:20
+msgid "Chinese Subtitles Help"
+msgstr "中文字幕帮助"
+
+#: templates/partial/custom_help.html:9 templates/zh_sub.html:22
+msgid "Return Home"
+msgstr "返回首页"
+
+#: templates/partial/custom_help.html:7
+msgid "Onkyo AV Problems"
+msgstr "Onkyo 功放问题"
 
