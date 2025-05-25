@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
     
-@dataclass(order=True)
+@dataclass(order=False)
 class AudioCodec:
     sort_index: int = field(init=False, repr=False)
     raw_data: str
@@ -45,6 +45,10 @@ class AudioCodec:
         if self.is_atmos:
             self.score += 10
         self.sort_index = self.score
+    def __lt__(self, other):
+        if not isinstance(other, AudioCodec):
+            return NotImplemented
+        return self.sort_index < other.sort_index
         
 def path_replacement(path: str) -> str:
     """Replace server path with temp SMB path to debug on Windows"""
