@@ -60,7 +60,7 @@ async def run_task():
     controller = ReceiverController(avr_host)
     await controller.connect()
     try:
-        result = await asyncio.wait_for(controller.query(), timeout=8)
+        result = await asyncio.wait_for(controller.query(), timeout=15)
         logging.info(f"{result}")
     except asyncio.TimeoutError:
         logging.info("Receive input remains PCM after playback.")

@@ -312,7 +312,7 @@ async def data(data: Dict[str, Any]):
         logger.error(f"Restart box intiated because the receive is playing {receiver_ac} but the media is {ac}.")
         logger.debug(f"The problematic file is {item_data.get('Path')}")
         try:
-            adb_command = "am start -a android.intent.action.VIEW -d file:///sdcard/Pictures/icon.png -timage/* com.mixplorer.silver/com.mixplorer.activities.ImageViewerActivity"
+            adb_command = "am start -a android.intent.action.VIEW -d file:///sdcard/Pictures/htpc-error.png -timage/* com.mixplorer.silver/com.mixplorer.activities.ImageViewerActivity"
             await app.haclient.adb(entity_id=ha_mp_adb, command=adb_command)
             await asyncio.sleep(1)
             await app.haclient.adb(entity_id=ha_mp_adb, command="reboot")
