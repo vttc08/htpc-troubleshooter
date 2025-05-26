@@ -11,6 +11,8 @@ aiologger = logging.getLogger("asyncio")
 aiologger.setLevel(logging.ERROR)
 aiohttp_logger = logging.getLogger("aiohttp_client")
 aiohttp_logger.setLevel(logging.ERROR)
+uvicorn_logger = logging.getLogger("uvicorn")
+uvicorn_logger.removeHandler(uvicorn_logger.handlers[0])
 
 hass_port = os.getenv("hass_port", 8123)
 hass_host = os.getenv("hass_host", "localhost")
